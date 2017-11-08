@@ -1,2 +1,12 @@
 # Crawler
-Java works on a web page crawling and parsing the saved web pages
+Java works on a web page crawling and parsing the saved web pages by using XPath
+
+该工程介绍使用Java和XPath实现的两个部分，分别为：《人民日报》网页爬取和下载保存下来的百度百科网页解析。
+
+  1.    进行《人民日报》网页爬取（包括自己代码编写和使用已有框架进行爬取）  
+        其中自己编写代码为单线程作业，适用于URL有规律的网页爬取。主要通过自己构造有规律的URL来进行爬取；
+        使用已有框架进行网页爬取，可以设置种子、线程数等，有较好的可扩展性。
+        
+  2.    将保存的网页进行解析，获取网页中的文本信息。
+        该工程主要进行的是下载保存下来的百度百科网页的解析。
+        该方法具有较好的可扩展性，可适用于所有保存的网页的解析。
