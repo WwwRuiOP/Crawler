@@ -1,0 +1,153 @@
+需要用到的jar包有： htmlcleaner-2.2.jar、jsoup-1.10.3.jar、dom4j-1.6.1.jar
+
+
+class Row{   //建立一个类，用来保存爬取的数据，即将需要爬取的《人民日报》中一篇报道的标题、作者、内容、URL和发表日期保存到Row对象中，利于之后存储
+	private String title;        //报道的标题
+	private String author;       //报道的作者
+	private String content;      //报道的正文
+	private String url;          //报道的URL
+	private String time;         //报道发表的时间
+	Row(){
+		this.title=null;
+		this.author=null;
+		this.content=null;
+		this.url=null;
+		this.time=null;
+	}
+	Row(String title,String author,String content,String url,String time){
+		this.title=title;
+		this.author=author;
+		this.content=content;
+		this.url=url;
+		this.time=time;
+	}
+	public String getTitle() {
+		return title;
+	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	public String getAuthor() {
+		return author;
+	}
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+	public String getContent() {
+		return content;
+	}
+	public void setContent(String content) {
+		this.content = content;
+	}
+	public String getUrl() {
+		return url;
+	}
+	public void setUrl(String url) {
+		this.url = url;
+	}
+	public String getTime() {
+		return time;
+	}
+	public void setTime(String time) {
+		this.time = time;
+	}
+}
+
+
+
+
+
+class Reptile{
+  //输入年（year）、月（month）、日（day）、第几版（type）、相应版本中的报道位置即第几个报道（num），用于构造要爬取的人民日报的URL
+	public Row reptile(int year,int month,int day,int num,int type) throws ParserConfigurationException, XPathExpressionException, IOException{
+		    String url = "http://paper.people.com.cn/rmrb/html/"+String.valueOf(year)+"-"+String.format("%02d", month)+"/"+String.format("%02d", day)+"/nw.D110000renmrb_"+String.valueOf(year)+String.format("%02d", month)+String.format("%02d", day)+"_"+String.valueOf(num)+"-"+String.format("%02d", type)+".htm";  
+	      String titleXPath = "//*[@class='text_c']//h1";            //标题的XPath
+	      // String subheadXPath = "//*[@class='text_c']//h2";       //子标题的XPath
+	      String authorXPath = "//*[@class='text_c']//h4";           //作者对应的XPath
+	      String contentXPath = "//*[@id='ozoom']//p";               //正文的XPath
+	      String html = null;  
+        Connection connect = Jsoup.connect(url);  
+        html = connect.get().body().html();   
+        
+        HtmlCleaner hc = new HtmlCleaner();  
+        TagNode tn = hc.clean(html);  
+        org.w3c.dom.Document dom = new DomSerializer(new CleanerProperties()).createDOM(tn);  
+        XPath xPath = XPathFactory.newInstance().newXPath(); 
+        
+        //以上连接URL获得HTML进而转为org.w3c.dom.Document对象和XPath的实例化
+        
+        Object title,author,content;  //subhead,
+        StringBuffer strTitle = new StringBuffer();
+        //StringBuffer strSubhead = new StringBuffer();
+        StringBuffer strAuthor = new StringBuffer();
+        StringBuffer strContent = new StringBuffer();
+        
+        title = xPath.evaluate(titleXPath, dom, XPathConstants.NODESET);       //通过XPath获得相应信息，获得类型为：NodeList
+        //subhead = xPath.evaluate(subheadXPath, dom, XPathConstants.NODESET); 
+        author = xPath.evaluate(authorXPath, dom, XPathConstants.NODESET); 
+        content = xPath.evaluate(contentXPath, dom, XPathConstants.NODESET); 
+        
+        if (title instanceof NodeList) {                                       //将获得的分类数据保存到相应的StringBuffer类中
+            NodeList nodeList = (NodeList) title;  
+            //System.out.println(nodeList.getLength()); 
+            for (int i = 0; i < nodeList.getLength(); i++) {  
+            	org.w3c.dom.Node node = nodeList.item(i); 
+            	//System.out.println("Title:"+node.getTextContent().toString());
+            	strTitle.append(node.getTextContent().toString());
+            	//System.out.println();
+            }	
+        }
+        System.out.println(strTitle.toString());
+        System.out.println();
+        
+        /*
+        if (subhead instanceof NodeList) {  
+            NodeList nodeList = (NodeList) subhead;  
+            System.out.println(nodeList.getLength()); 
+            for (int i = 0; i < nodeList.getLength(); i++) {  
+            	org.w3c.dom.Node node = nodeList.item(i); 
+            	//System.out.println("Subhead:"+node.getTextContent().toString());
+            	strSubhead.append(node.getTextContent().toString());
+            	//System.out.println();
+            }	
+        }
+        System.out.println(strSubhead.toString());
+        System.out.println();*/
+        
+        if (author instanceof NodeList) {  
+            NodeList nodeList = (NodeList) author;  
+           // System.out.println(nodeList.getLength()); 
+            for (int i = 0; i < nodeList.getLength(); i++) {  
+            	org.w3c.dom.Node node = nodeList.item(i); 
+            	//System.out.println("Author:"+node.getTextContent().toString());
+            	strAuthor.append(node.getTextContent().toString());
+            	//System.out.println();
+            }	
+        }
+        System.out.println(strAuthor.toString());
+        System.out.println();
+        
+        System.out.println("Content:");
+        if (content instanceof NodeList) {  
+            NodeList nodeList = (NodeList) content;  
+            //System.out.println(nodeList.getLength()); 
+            for (int i = 0; i < nodeList.getLength(); i++) {  
+            	org.w3c.dom.Node node = nodeList.item(i); 
+            	//System.out.println(node.getTextContent().toString());
+            	strContent.append(node.getTextContent().toString()+"\n");
+            }	
+        }
+        System.out.println(strContent.toString());
+        System.out.println();
+        
+        //将相应的StringBuffer对象保存到Row类中
+        Row row = new Row();        
+        row.setAuthor(strAuthor.toString());
+        row.setTitle(strTitle.toString());//+strSubhead.toString()
+        row.setContent(strContent.toString());
+        row.setUrl(url);
+        row.setTime(String.valueOf(year)+String.format("%02d", month)+String.format("%02d", day)+"-"+String.format("%02d", type));
+       
+        return row;
+        
+	}
